@@ -1,3 +1,6 @@
+# game.py
+# This module handles the input & output of the game. Constantly updates the visuals of the board, and recieves the gamestate from chess.py
+
 import pygame
 import chess
 
@@ -23,8 +26,8 @@ def draw_pieces(pieces):
         piece_image = pygame.transform.scale(piece_image, (SQUARE_SIZE, SQUARE_SIZE))
         screen.blit(piece_image, (piece.col * SQUARE_SIZE, piece.row * SQUARE_SIZE))
 
-# Draws the chessboard. Should draw pieces as well
-def draw_board(white_pieces, black_pieces):
+# Draws the chessboard and pieces
+def draw_board():
     for row in range(ROWS):
         for col in range(COLS):
             if (row + col) % 2 == 0:
@@ -32,8 +35,8 @@ def draw_board(white_pieces, black_pieces):
             else:
                 color = BLACK
             pygame.draw.rect(screen, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-    draw_pieces(white_pieces)
-    draw_pieces(black_pieces)
+    draw_pieces(chess.white_pieces)
+    draw_pieces(chess.black_pieces)
 
 # Highlights given square
 def highlight_square(row, col):
@@ -44,13 +47,25 @@ def get_square_under_mouse(pos):
     x, y = pos
     return y // SQUARE_SIZE, x // SQUARE_SIZE
 
+turn_color = 'white'
+selected = None
+highlighted_square = None
 
-white_pieces = []
-black_pieces = []
-chess.initialize_army(white_pieces, 'white')
-chess.initialize_army(black_pieces, 'black')
+def board_clicked(row, col):
+    global selected, highlighted_square
 
-# Main game loop
+    piece = chess.clicked_piece(row, col)
+    if piece is not None:
+        print(f"There is a {piece.color} {piece.type} on ({piece.row}, {piece.col})")
+        if piece.color == turn_color:
+            selected = piece           
+            highlighted_square = (row, col) 
+    else:
+        print(f"There's an empty square on ({row}, {col})")
+        selected = None
+        highlighted_square = None
+
+# This is the game loop
 running = True
 while running:
     for event in pygame.event.get():
@@ -61,11 +76,11 @@ while running:
             pos = pygame.mouse.get_pos()
             row, col = get_square_under_mouse(pos)
 
-            # Check if the click is on the board
             if 0 <= row < ROWS and 0 <= col < COLS:
-                print(f"Clicked on board square: ({row}, {col})")  # Log the coordinates
-    draw_board(white_pieces, black_pieces)
+                board_clicked(row, col)
 
+    draw_board()
+    if highlighted_square is not None:
+        highlight_square(*highlighted_square)
     pygame.display.flip()
-
 pygame.quit()
