@@ -1,41 +1,86 @@
-# chess.py
-# This module handles the logic of the chess game. We recieve the moves from game.py as (row, col)
+# game.py
+# This module handles the input & output of the game. Constantly updates the visuals of the board, and recieves the gamestate from chess.py
 
-class Piece():
-    def __init__(self, row, col, type, color):
-        self.row = row
-        self.col = col
-        self.type = type
-        self.color = color
+import pygame
+import chess
 
-    # returns a list of coordinates (row, col) that this piece is allowed to move to
-    def return_valid_moves(self, white_pieces, black_pieces):
-        pass
+# Constants
+WIDTH, HEIGHT = 600, 600
+ROWS, COLS = 8, 8
+SQUARE_SIZE = WIDTH // COLS
 
-# initializes the list of chess pieces. Can be easily updated to have a dynamic "types" for different types of armies and pieces
-def initialize_army(pieces, color):
-    rows = (0, 1)
-    if color == 'white':
-        rows = (7, 6)
-    types = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook']
-    for i in range(0,8):
-        pieces.append(Piece(rows[0], i, types[i], color))
-    for i in range(0,8):
-        pieces.append(Piece(rows[1], i, 'pawn', color))
+# Colors
+WHITE = (240, 217, 181)
+BLACK = (181, 136, 99)
+HIGHLIGHT = (100, 200, 100)
 
-# global lists of the pieces
-white_pieces = []
-black_pieces = []
-initialize_army(white_pieces, 'white')
-initialize_army(black_pieces, 'black')
+# Initialize Pygame
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('Chess Game')
 
-def clicked_piece(row, col):
-    for piece in white_pieces + black_pieces:
-        if piece.row == row and piece.col == col:
-            return piece
-    return None
-
-def print_pieces(pieces):
+# Draw each piece at the correct spot
+def draw_pieces(pieces):
     for piece in pieces:
-        print(f"{piece.color} {piece.type}, ({piece.row}, {piece.col})")
+        piece_image = pygame.image.load(f"assets\{piece.color}_{piece.type}.png")
+        piece_image = pygame.transform.scale(piece_image, (SQUARE_SIZE, SQUARE_SIZE))
+        screen.blit(piece_image, (piece.col * SQUARE_SIZE, piece.row * SQUARE_SIZE))
 
+# Draws the chessboard and pieces
+def draw_board():
+    for row in range(ROWS):
+        for col in range(COLS):
+            if (row + col) % 2 == 0:
+                color = WHITE
+            else:
+                color = BLACK
+            pygame.draw.rect(screen, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+    draw_pieces(chess.white_pieces)
+    draw_pieces(chess.black_pieces)
+
+# Highlights given square
+def highlight_square(row, col):
+    pygame.draw.rect(screen, HIGHLIGHT,  (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), 3)
+
+# Returns the square clicked on (row, col)
+def get_square_under_mouse(pos):
+    x, y = pos
+    return y // SQUARE_SIZE, x // SQUARE_SIZE
+
+turn_color = 'white'
+selected = None
+highlighted_square = None
+
+def board_clicked(row, col):
+    global selected, highlighted_square
+
+    piece = chess.clicked_piece(row, col)
+    if piece is not None:
+        print(f"There is a {piece.color} {piece.type} on ({piece.row}, {piece.col})")
+        if piece.color == turn_color:
+            selected = piece           
+            highlighted_square = (row, col) 
+    else:
+        print(f"There's an empty square on ({row}, {col})")
+        selected = None
+        highlighted_square = None
+
+# This is the game loop
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            row, col = get_square_under_mouse(pos)
+
+            if 0 <= row < ROWS and 0 <= col < COLS:
+                board_clicked(row, col)
+
+    draw_board()
+    if highlighted_square is not None:
+        highlight_square(*highlighted_square)
+    pygame.display.flip()
+pygame.quit()
