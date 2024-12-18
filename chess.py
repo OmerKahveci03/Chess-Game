@@ -10,8 +10,8 @@ class Piece():
         self.type = type
         self.color = color
 
-# returns true if the given (row, col) move captures an enemy piece
-    def is_capture(self, row, col):
+# returns true if the given (row, col) location has an enemy piece
+    def enemy_piece_at(self, row, col):
         the_piece = piece_at(row, col)
 
         if the_piece is not None:
@@ -43,27 +43,40 @@ class Piece():
                 while self.is_valid_move(row, col):
                     move_list.append((row, col))
                     i += 1
-                    if self.is_capture(row, col):
+                    if self.enemy_piece_at(row, col):
                         break
                     row = self.row + direction[0] * i
                     col = self.col + direction[1] * i
         return move_list
 
+    def move(self, row, col):
+        # remove enemy piece if it is here
+        if self.enemy_piece_at(row, col):
+             pass
+        self.row = row
+        self.col = col
+
     # returns a list of coordinates (row, col) that this piece is allowed to move to
-    def valid_moves(self, white_pieces, black_pieces):
+    def valid_moves(self):
         move_list = []
 
         if self.type == 'pawn':
-            if self.color == 'black':
-                for i in range(-1, 2):
-                    move_list.append((self.row + 1, self.col + i))
-                if self.row == 1:
-                    move_list.append((self.row + 2, self.col))
-            else:
-                for i in range(-1, 2):
-                    move_list.append((self.row - 1, self.col + i))
-                if self.row == 6:
-                        move_list.append((self.row - 2, self.col))
+            direction = 1
+            start = 1
+            if self.color == 'white':
+                direction = -1
+                start = 6
+
+            if not self.enemy_piece_at(self.row + direction, self.col): # basic move
+                move_list.append((self.row + direction, self.col))
+                if self.row == start and not self.enemy_piece_at(self.row + direction * 2, self.col):
+                    move_list.append((self.row + direction * 2, self.col))
+            if self.enemy_piece_at(self.row + direction, self.col + 1): # capture moves
+                move_list.append((self.row + direction, self.col + 1))
+            if self.enemy_piece_at(self.row + direction, self.col - 1): # capture moves
+                move_list.append((self.row + direction, self.col - 1))
+
+            return move_list    # pawns follow unique rules, so I'm returning it before the filter
 
         elif self.type == 'knight':
             moves = [(2,1), (2,-1), (1,2), (1,-2), (-1,2), (-1,-2), (-2,1), (-2,-1)]
@@ -126,8 +139,8 @@ def piece_at(row, col):
     return None
 
 # if selected is None, select the piece. Otherwise, try moving the piece to the selected spot, and set selected to None
-def board_clicked(row, col):
-    global selected
+def board_clicked(row, col,):
+    global selected, turn_color
 
     temp = selected
     piece = piece_at(row, col)
@@ -139,13 +152,18 @@ def board_clicked(row, col):
         print(f"There's an empty square on ({row}, {col})")
         selected = None
     
+    # a piece was previously selected
     if temp is not None:
-        for piece in white_pieces + black_pieces:
+        for piece in white_pieces + black_pieces:       # find the previously selected piece in the lists
             if temp is piece:
                 # try to move, or reject
-                if (row, col) in piece.valid_moves(white_pieces, black_pieces):
-                    piece.row = row
-                    piece.col = col
+                if (row, col) in piece.valid_moves():
+                    piece.move(row, col, white_pieces, black_pieces)
+                    if turn_color == 'white':
+                        turn_color = 'black'
+                    else:
+                        turn_color = 'white'
+                    print(f"{turn_color}'s turn.")
                 else:
                     print("Invalid Move!")
                 selected = None
