@@ -47,23 +47,7 @@ def get_square_under_mouse(pos):
     x, y = pos
     return y // SQUARE_SIZE, x // SQUARE_SIZE
 
-turn_color = 'white'
-selected = None
 highlighted_square = None
-
-def board_clicked(row, col):
-    global selected, highlighted_square
-
-    piece = chess.clicked_piece(row, col)
-    if piece is not None:
-        print(f"There is a {piece.color} {piece.type} on ({piece.row}, {piece.col})")
-        if piece.color == turn_color:
-            selected = piece           
-            highlighted_square = (row, col) 
-    else:
-        print(f"There's an empty square on ({row}, {col})")
-        selected = None
-        highlighted_square = None
 
 # This is the game loop
 running = True
@@ -77,7 +61,11 @@ while running:
             row, col = get_square_under_mouse(pos)
 
             if 0 <= row < ROWS and 0 <= col < COLS:
-                board_clicked(row, col)
+                chess.board_clicked(row, col)
+                if chess.selected is not None:
+                    highlighted_square = (chess.selected.row, chess.selected.col)
+                else:
+                    highlighted_square = None
 
     draw_board()
     if highlighted_square is not None:
