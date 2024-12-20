@@ -61,6 +61,8 @@ while running:
 
             if 0 <= row < ROWS and 0 <= col < COLS:
                 chess.board_clicked(row, col)
+                if chess.winner:
+                     break
                 if chess.selected is not None:
                     highlighted_square = (chess.selected.row, chess.selected.col)
                 else:

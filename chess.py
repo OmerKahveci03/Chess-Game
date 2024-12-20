@@ -5,7 +5,6 @@
 # 1) Castling
 # 2) En Peassant
 # 3) Promotion
-# 4) Checkmate
 
 from common import ROWS, COLS
 
@@ -13,6 +12,7 @@ from common import ROWS, COLS
 turn_color = 'white'
 selected = None
 pieces = []
+winner = None
 
 # returns the piece located at (row, col)
 def piece_at(row, col):
@@ -57,7 +57,9 @@ class Piece():
             turn_color = 'black'
         else:
             turn_color = 'white'
+
         print(f"{turn_color}'s turn.")
+
 
 # returns true if the given move (row, col) doesn't go out of bounds or onto a friendly piece
     def is_legal_move(self, row, col):
@@ -200,6 +202,22 @@ types = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'
 initialize_army('white', types)
 initialize_army('black', types)
 
+# search every piece. If any of them can move, it is not checkmate
+def is_checkmate():
+    valid_moves = []
+    for piece in pieces:
+        if piece.color == turn_color:
+            valid_moves += piece.get_valid_moves()
+            if valid_moves:
+                return False
+            
+    global winner
+    if turn_color == 'black':
+        winner = 'white'
+    else:
+        winner = 'black'
+    return True
+
 # Either (try to) select a piece, or (try to) move the selected piece
 def board_clicked(row, col,):
     global selected, turn_color
@@ -230,6 +248,8 @@ def board_clicked(row, col,):
                 # try to move, or reject
                 if (row, col) in move_list:
                     piece.move(row, col)
+                    if is_checkmate():
+                        print(f"Checkmate! {winner} has won!")
                 else:
                     print("\n\nInvalid Move!\n\n")
                 selected = None
