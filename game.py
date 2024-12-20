@@ -1,7 +1,7 @@
 # game.py
 # This module handles the input & output of the game. Constantly updates the visuals of the board, and recieves the gamestate from chess.py
 
-import pygame
+import pygame # type: ignore
 import chess
 from common import ROWS, COLS
 
@@ -35,8 +35,7 @@ def draw_board():
             else:
                 color = BLACK
             pygame.draw.rect(screen, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-    draw_pieces(chess.white_pieces)
-    draw_pieces(chess.black_pieces)
+    draw_pieces(chess.pieces)
 
 # Highlights given square
 def highlight_square(row, col):
