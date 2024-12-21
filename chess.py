@@ -2,9 +2,8 @@
 # This module handles the logic of the chess game. We recieve the moves from game.py as (row, col)
 
 # BASE GAME TO DO:
-# 1) Castling
-# 2) En Peassant
-# 3) Promotion
+# 1) En Peassant
+# 2) Custom Promotion
 
 from common import ROWS, COLS
 
@@ -107,7 +106,6 @@ class Piece():
                 i += 1
         return move_list
 
-
     # returns a list of legal moves (row, col) that this piece can take (ignoring checks))
     def get_base_moves(self):
         move_list = []
@@ -117,15 +115,15 @@ class Piece():
             if self.color == 'white':
                 direction = -1
 
+            # attack moves
+            move_list.append((self.row + direction, self.col -1))
+            move_list.append((self.row + direction, self.col + 1))
+
+            # basic moves
             if not piece_at(self.row + direction, self.col):
                 move_list.append((self.row + direction, self.col))
                 if not self.has_moved and not piece_at(self.row + 2*direction, self.col):
                     move_list.append((self.row + 2*direction, self.col))
-
-            if enemy_piece_at(self.row + direction, self.col + 1):
-                move_list.append((self.row + direction, self.col + 1))
-            if enemy_piece_at(self.row + direction, self.col - 1):
-                move_list.append((self.row + direction, self.col - 1))
 
         elif self.type == 'knight':
             moves = [(2,1), (2,-1), (1,2), (1,-2), (-1,2), (-1,-2), (-2,1), (-2,-1)]
@@ -194,7 +192,6 @@ class Piece():
             # test all enemy pieces to see if they threaten our king
             in_check = False
             for piece in pieces:
-                enemy_piece_moves = piece.get_base_moves()
                 if piece.color != self.color and piece.threatens_enemy_king():
                     in_check = True
                     break
@@ -213,6 +210,16 @@ class Piece():
                 valid_moves.remove((self.row, self.col + 2))
             if (self.row, self.col - 2) in valid_moves and (self.row, self.col - 1) not in valid_moves:
                 valid_moves.remove((self.row, self.col - 2))
+
+        # special pawn attack testing
+        if self.type == 'pawn':
+            direction = 1
+            if self.color == 'white':
+                direction = -1
+            if not enemy_piece_at(self.row + direction, self.col + 1) and (self.row + direction, self.col + 1) in valid_moves:
+                valid_moves.remove((self.row + direction, self.col + 1))
+            if not enemy_piece_at(self.row + direction, self.col - 1) and (self.row + direction, self.col - 1) in valid_moves:
+                valid_moves.remove((self.row + direction, self.col - 1))
         return valid_moves
 
 
