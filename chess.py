@@ -36,7 +36,6 @@ class Piece():
         self.col = col
         self.type = type
         self.color = color
-#        self.threatens_enemy_king = False
         self.has_moved = False
 
     # kills the piece by removing it from the list. Also returns it in case you'd want to use it
@@ -47,19 +46,33 @@ class Piece():
     # moves the piece from its initial position to (row, col)
     def move(self, row, col):
         global turn_color
+
+        # if we are castling (short), move rook too
+        if self.type == 'king' and self.col + 2 == col: 
+            rook = piece_at(row, col + 1)
+            rook.col = self.col + 1
+        if self.type == 'king' and self.col - 2 == col:
+            rook = piece_at(row, col - 2)
+            rook.col = self.col - 1
+
         target_piece = piece_at(row, col)
         if target_piece:
             target_piece.kill()
         self.row = row
         self.col = col
         self.has_moved = True
+
+        # promotion checking
+        if self.type == 'pawn':
+            if (self.color == 'white' and self.row == 0) or (self.color == 'black' and self.row == ROWS - 1):
+                self.type = 'queen'
+
         if turn_color == 'white':
             turn_color = 'black'
         else:
             turn_color = 'white'
 
         print(f"{turn_color}'s turn.")
-
 
 # returns true if the given move (row, col) doesn't go out of bounds or onto a friendly piece
     def is_legal_move(self, row, col):
@@ -93,6 +106,7 @@ class Piece():
                     break
                 i += 1
         return move_list
+
 
     # returns a list of legal moves (row, col) that this piece can take (ignoring checks))
     def get_base_moves(self):
@@ -131,7 +145,15 @@ class Piece():
             move_list = self.directional_moves(directions)
 
         elif self.type == 'king':
-            moves = [(-1,-1), (-1, 0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,-1)]
+            moves = [(-1,-1), (-1, 0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1), (0,2), (0,-2)]
+            short_rook = piece_at(self.row, self.col + 3)
+            long_rook = piece_at(self.row, self.col - 4)
+            if short_rook:
+                if self.has_moved or piece_at(self.row, self.col + 1) or short_rook.has_moved:
+                    moves.remove((0,2))
+            if long_rook:
+                if self.has_moved or piece_at(self.row, self.col - 1) or piece_at(self.row, self.col - 2) or long_rook.has_moved:
+                    moves.remove((0,-2))
             move_list = self.directional_moves(moves, 1)
 
         else:
@@ -140,7 +162,6 @@ class Piece():
 
         return move_list
     
-
 # returns true if the piece can attack the king. Move list is all valid moves without check testing
     def threatens_enemy_king(self):
         king_row, king_col = None, None
@@ -185,6 +206,13 @@ class Piece():
             
             if not in_check:
                 valid_moves.append(move)
+
+        # special castling testing
+        if self.type == 'king':
+            if (self.row, self.col + 2) in valid_moves and (self.row, self.col + 1) not in valid_moves:
+                valid_moves.remove((self.row, self.col + 2))
+            if (self.row, self.col - 2) in valid_moves and (self.row, self.col - 1) not in valid_moves:
+                valid_moves.remove((self.row, self.col - 2))
         return valid_moves
 
 
