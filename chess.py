@@ -316,7 +316,8 @@ def board_clicked(row, col,):
         print(f"Checkmate! {winner} has won!")
 
 def u_pressed():
-    global turn_color
+    global turn_color, selected
+    selected = None
     undo_last_move(move_history, pieces)
     if turn_color == 'white':
         turn_color = 'black'
