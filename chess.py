@@ -2,16 +2,18 @@
 # This module handles the logic of the chess game. We recieve the moves from game.py as (row, col)
 
 # BASE GAME TO DO:
-# 1) En Peassant
+# 1) Stalemate
 # 2) Custom Promotion
 
 from common import ROWS, COLS
+from moves import Move, undo_last_move
 
 # global data
 turn_color = 'white'
 selected = None
 pieces = []
 winner = None
+move_history = []
 
 # returns the piece located at (row, col)
 def piece_at(row, col):
@@ -35,7 +37,7 @@ class Piece():
         self.col = col
         self.type = type
         self.color = color
-        self.has_moved = False
+        self.times_moved = 0
 
     # kills the piece by removing it from the list. Also returns it in case you'd want to use it
     def kill(self):
@@ -43,35 +45,49 @@ class Piece():
         return self
 
     # moves the piece from its initial position to (row, col)
-    def move(self, row, col):
+    def move_piece(self, row, col):
         global turn_color
+        target_piece = None
+        original_row, original_col = self.row, self.col
 
-        # if we are castling (short), move rook too
+            # if we are castling, move rook too
         if self.type == 'king' and self.col + 2 == col: 
-            rook = piece_at(row, col + 1)
-            rook.col = self.col + 1
-        if self.type == 'king' and self.col - 2 == col:
-            rook = piece_at(row, col - 2)
-            rook.col = self.col - 1
-
-        target_piece = piece_at(row, col)
-        if target_piece:
-            target_piece.kill()
-        self.row = row
-        self.col = col
-        self.has_moved = True
+            target_piece = piece_at(row, col + 1)
+            target_piece.col = self.col + 1
+        elif self.type == 'king' and self.col - 2 == col:
+            target_piece = piece_at(row, col - 2)
+            target_piece.col = self.col - 1
+            # if we are en passant, target the correct square
+        elif self.type == 'pawn' and self.col != col and not piece_at(row, col):
+            direction = 1
+            if self.color == 'white':
+                direction = -1
+            target_piece = piece_at(row - direction, col)
+            if target_piece:
+                target_piece.kill()
+            self.row, self.col = row, col
+            self.times_moved += 1
+        else:   # just a regular move with no special rules
+            target_piece = piece_at(row, col)
+            if target_piece:
+                target_piece.kill()
+        self.row, self.col = row, col
+        self.times_moved += 1
 
         # promotion checking
         if self.type == 'pawn':
             if (self.color == 'white' and self.row == 0) or (self.color == 'black' and self.row == ROWS - 1):
                 self.type = 'queen'
 
+        # change turn
         if turn_color == 'white':
             turn_color = 'black'
         else:
             turn_color = 'white'
-
         print(f"{turn_color}'s turn.")
+
+        # record move in move_history
+        move_history.append(Move(self, original_row, original_col, target_piece))
 
 # returns true if the given move (row, col) doesn't go out of bounds or onto a friendly piece
     def is_legal_move(self, row, col):
@@ -119,10 +135,10 @@ class Piece():
             move_list.append((self.row + direction, self.col -1))
             move_list.append((self.row + direction, self.col + 1))
 
-            # basic moves
+            # basic moves (only if no pieces are in the way)
             if not piece_at(self.row + direction, self.col):
                 move_list.append((self.row + direction, self.col))
-                if not self.has_moved and not piece_at(self.row + 2*direction, self.col):
+                if self.times_moved == 0 and not piece_at(self.row + 2*direction, self.col):
                     move_list.append((self.row + 2*direction, self.col))
 
         elif self.type == 'knight':
@@ -147,10 +163,10 @@ class Piece():
             short_rook = piece_at(self.row, self.col + 3)
             long_rook = piece_at(self.row, self.col - 4)
             if short_rook:
-                if self.has_moved or piece_at(self.row, self.col + 1) or short_rook.has_moved:
+                if self.times_moved + short_rook.times_moved != 0 or piece_at(self.row, self.col + 1):
                     moves.remove((0,2))
             if long_rook:
-                if self.has_moved or piece_at(self.row, self.col - 1) or piece_at(self.row, self.col - 2) or long_rook.has_moved:
+                if self.times_moved + long_rook.times_moved != 0 or piece_at(self.row, self.col - 1) or piece_at(self.row, self.col - 2):
                     moves.remove((0,-2))
             move_list = self.directional_moves(moves, 1)
 
@@ -174,34 +190,46 @@ class Piece():
                 return True
         return False
 
+# returns true if the move doesn't leave the king vulnerable
+    def simulate_move(self, move):
+        original_row, original_col = self.row, self.col
+        target_piece = piece_at(move[0], move[1])
+        if target_piece:
+            pieces.remove(target_piece)
+        self.row, self.col = move
+
+        # test all enemy pieces to see if they threaten our king
+        in_check = False
+        for piece in pieces:
+            if piece.color != self.color and piece.threatens_enemy_king():
+                in_check = True
+                break
+                
+        # undo
+        if target_piece:
+            pieces.append(target_piece)
+        self.row, self.col = original_row, original_col
+
+        return in_check
+
+# returns 0 if not. Returns the direction (-1 or 1) if yes
+    def is_en_passant_possible(self):
+        if len(move_history) > 0: 
+            move = move_history[len(move_history) - 1]
+
+            if move.moved_piece.type == 'pawn':
+                if abs(move.original_row - move.moved_piece.row) == 2 and move.moved_piece.row == self.row:
+                    return move.moved_piece.col - self.col
+        return 0
+
 # gets base moves, then filters out illegal ones caused by check
     def get_valid_moves(self):
         move_list = self.get_base_moves()
         valid_moves = []
 
         # do check testing
-        # first, simulate move. Then test for check. Then undo
         for move in move_list:
-            # simulate move
-            original_row, original_col = self.row, self.col
-            target_piece = piece_at(move[0], move[1])
-            if target_piece:
-                pieces.remove(target_piece)
-            self.row, self.col = move
-
-            # test all enemy pieces to see if they threaten our king
-            in_check = False
-            for piece in pieces:
-                if piece.color != self.color and piece.threatens_enemy_king():
-                    in_check = True
-                    break
-                
-            # undo
-            if target_piece:
-                pieces.append(target_piece)
-            self.row, self.col = original_row, original_col
-            
-            if not in_check:
+            if not self.simulate_move(move):
                 valid_moves.append(move)
 
         # special castling testing
@@ -220,14 +248,19 @@ class Piece():
                 valid_moves.remove((self.row + direction, self.col + 1))
             if not enemy_piece_at(self.row + direction, self.col - 1) and (self.row + direction, self.col - 1) in valid_moves:
                 valid_moves.remove((self.row + direction, self.col - 1))
-        return valid_moves
+            
+            if self.is_en_passant_possible != 0:
+                valid_moves.append((self.row + direction, self.col + self.is_en_passant_possible()))
 
+            
+        return valid_moves
+    
 
 # initializes the list of chess pieces. Can be easily updated to have a dynamic "types" for different types of armies and pieces
 def initialize_army(color, types):
     rows = (0, 1)
     if color == 'white':
-        rows = (7, 6)
+        rows = (ROWS - 1, ROWS - 2)
     for i in range(0,8):
         pieces.append(Piece(rows[0], i, types[i], color))
     for i in range(0,8):
@@ -242,7 +275,7 @@ def is_checkmate():
     valid_moves = []
     for piece in pieces:
         if piece.color == turn_color:
-            valid_moves += piece.get_valid_moves()
+            valid_moves = piece.get_valid_moves()
             if valid_moves:
                 return False
             
@@ -257,35 +290,35 @@ def is_checkmate():
 def board_clicked(row, col,):
     global selected, turn_color
 
-    temp = selected
+    previously_selected = selected
     piece = piece_at(row, col)
-    if piece is not None:
-#        print(f"There is a {piece.color} {piece.type} on ({piece.row}, {piece.col})")
+    if piece:
         if piece.color == turn_color:
             selected = piece
-
-            # print move options
             move_list = piece.get_valid_moves()
             print(f"{piece.color} {piece.type} has moves: ", end="")
             for move in move_list:
                 print(f"({move[0]}, {move[1]})", end=" ")
             print("")         
-
     else:
-#        print(f"There's an empty square on ({row}, {col})")
         selected = None
     
-    # a piece was previously selected
-    if temp is not None:
-        for piece in pieces:       # find the previously selected piece in the lists
-            if temp is piece:
-                move_list = piece.get_valid_moves()
-                # try to move, or reject
-                if (row, col) in move_list:
-                    piece.move(row, col)
-                    if is_checkmate():
-                        print(f"Checkmate! {winner} has won!")
-                else:
-                    print("\n\nInvalid Move!\n\n")
-                selected = None
-                break
+    # a piece was previously selected, so we try to move
+    if previously_selected:
+        move_list = previously_selected.get_valid_moves()
+        if (row, col) in move_list:
+            previously_selected.move_piece(row, col)
+        else:
+            print("\n\nInvalid Move!\n\n")
+        selected = None
+    
+    if is_checkmate():
+        print(f"Checkmate! {winner} has won!")
+
+def u_pressed():
+    global turn_color
+    undo_last_move(move_history, pieces)
+    if turn_color == 'white':
+        turn_color = 'black'
+    else:
+        turn_color = 'white'
