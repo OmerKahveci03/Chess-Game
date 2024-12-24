@@ -3,7 +3,7 @@
 
 # BASE GAME TO DO:
 # 1) Stalemate
-# 2) Custom Promotion
+# 2) Custom Promoting (need front-end help, can do this later down the line)
 
 from common import ROWS, COLS
 from moves import Move, undo_last_move
@@ -71,13 +71,16 @@ class Piece():
             target_piece = piece_at(row, col)
             if target_piece:
                 target_piece.kill()
+                
         self.row, self.col = row, col
         self.times_moved += 1
 
         # promotion checking
+        is_promotion = False
         if self.type == 'pawn':
             if (self.color == 'white' and self.row == 0) or (self.color == 'black' and self.row == ROWS - 1):
                 self.type = 'queen'
+                is_promotion = True
 
         # change turn
         if turn_color == 'white':
@@ -87,7 +90,7 @@ class Piece():
         print(f"{turn_color}'s turn.")
 
         # record move in move_history
-        move_history.append(Move(self, original_row, original_col, target_piece))
+        move_history.append(Move(self, original_row, original_col, target_piece, is_promotion))
 
 # returns true if the given move (row, col) doesn't go out of bounds or onto a friendly piece
     def is_legal_move(self, row, col):
