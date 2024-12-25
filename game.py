@@ -70,6 +70,8 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_u:
                 chess.u_pressed()
+                highlighted_square = None
+
 
     draw_board()
     if highlighted_square is not None:
