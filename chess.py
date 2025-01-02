@@ -10,7 +10,7 @@ from moves import Move, undo_last_move
 
 # global data
 turn_color = 'white'
-selected = None
+selected = None     # the piece to be highlighted
 pieces = []
 winner = None
 move_history = []
@@ -279,6 +279,12 @@ class Piece():
             
         return valid_moves
     
+    def print_valid_moves(self):
+        move_list = self.get_valid_moves()
+        print(f"{self} has moves: ", end="")
+        for move in move_list:
+            print(f"({move[0]}, {move[1]})", end=" ")
+        print("")
 
 # initializes the list of chess pieces. Can be easily updated to have a dynamic "types" for different types of armies and pieces
 def initialize_army(color, types):
@@ -327,42 +333,30 @@ def is_game_over():
 
 # Either (try to) select a piece, or (try to) move the selected piece
 def board_clicked(row, col,):
-    global selected, turn_color
-    print("\n\nCLICK...")
-
-    previously_selected = selected
-    piece = piece_at(row, col)
-    if piece:
-        print(f"{piece} was clicked on")
-        if piece.color == turn_color:
-            selected = piece
-            move_list = piece.get_valid_moves()
-            print(f"{piece} has moves: ", end="")
-            for move in move_list:
-                print(f"({move[0]}, {move[1]})", end=" ")
-            print("")         
-    else:
-        print(f"An empty square at {row, col} was clicked on")
-        selected = None
+    if not pieces:
+        return None # do nothing if the game hasn't started
     
-    # a piece was previously selected, so we try to move
-    if previously_selected:
-        print(f"Attempting to move {previously_selected} to ({row} , {col})")
+    global selected
+    previously_selected = selected
+    target_piece = piece_at(row, col)
+    if target_piece and target_piece.color == turn_color:
+        selected = target_piece
+        target_piece.print_valid_moves()
+        return None
+    elif previously_selected:
         move_list = previously_selected.get_valid_moves()
+        print(f"Attempting to move {previously_selected} to ({row} , {col})")
         if (row, col) in move_list:
             print("\nMove is success!")
             previously_selected.move_piece(row, col)
+            if is_game_over():
+                if winner == 'stalemate':
+                    print("The game is a draw.")
+                else:
+                    print(f"Checkmate! {winner} has won!")
         else:
             print("\nInvalid Move!")
-        selected = None
-    
-    if is_game_over():
-        if winner == 'stalemate':
-            print("The game is a draw.")
-        else:
-            print(f"Checkmate! {winner} has won!")
-
-    print("Click over...")
+    selected = None
 
 def u_pressed():
     global turn_color, selected
