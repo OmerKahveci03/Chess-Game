@@ -1,48 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Chess Game</title>
-    <style>
-        /* Basic styling for an 8x8 grid (you can adjust as needed) */
-        #chessboard {
-            display: grid;
-            grid-template-columns: repeat(8, 60px); /* 8 columns, each 60px wide */
-            grid-template-rows: repeat(8, 60px);    /* 8 rows, each 60px tall */
-            width: 480px;
-            height: 480px;
-            border: 2px solid #000;
-        }
-        .square {
-            width: 60px;
-            height: 60px;
-            position: relative;
-            box-sizing: border-box;
-        }
-        .white-square {
-            background-color: rgb(240, 217, 181);
-        }
-        .black-square {
-            background-color: rgb(181, 136, 99);
-        }
-        /* A highlight ring (3px) around the square */
-        .highlighted {
-            outline: 3px solid rgb(100, 200, 100);
-        }
-        /* Piece image: fit entire square */
-        .piece-img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-    </style>
-</head>
-<body>
-
-<h1>Chess Game</h1>
-<div id="chessboard"></div>
-<button onclick="undoMove()">Undo</button>
-
-<script>
 const chessboardEl = document.getElementById('chessboard');
 const ROWS = 8;
 const COLS = 8;
@@ -167,6 +122,3 @@ function undoMove() {
 
 // Initial load
 updateBoard();
-</script>
-</body>
-</html>
