@@ -120,5 +120,13 @@ function undoMove() {
     });
 }
 
+function startGame() {
+    fetch('/start', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+        renderBoardData(data);
+    });
+}
+
 // Initial load
 updateBoard();

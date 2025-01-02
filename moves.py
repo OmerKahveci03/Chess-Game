@@ -10,7 +10,7 @@ class Move():
         self.secondary_piece = secondary_piece
         self.is_promotion = is_promotion
 
-# pretty self explanitory what this does
+# pretty self explanitory what this does. Returns true if successful, returns false if not possible
 def undo_last_move(move_history, pieces):
     if len(move_history) > 0:
         move = move_history.pop()
@@ -32,3 +32,6 @@ def undo_last_move(move_history, pieces):
         
         if move.secondary_piece and not castled:
             pieces.append(move.secondary_piece)
+    else:
+        return False
+    return True

@@ -2,7 +2,7 @@
 # This module handles the logic of the chess game. We recieve the moves from game.py as (row, col)
 
 # BASE GAME TO DO:
-# 1) Stalemate
+# 1) Stalemate (Insufficient Material)
 # 2) Custom Promoting (need front-end help, can do this later down the line)
 
 from common import ROWS, COLS
@@ -290,9 +290,13 @@ def initialize_army(color, types):
     for i in range(0,8):
         pieces.append(Piece(rows[1], i, 'pawn', color))
 
-types = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook']
-initialize_army('white', types)
-initialize_army('black', types)
+def initialize_game(white_types, black_types):
+    global pieces, move_history, turn_color
+    pieces = []
+    move_history = []
+    turn_color = 'white'
+    initialize_army('white', white_types)
+    initialize_army('black', black_types)
 
 # search every piece. If any of them can move, it is not checkmate
 def is_game_over():
@@ -363,8 +367,10 @@ def board_clicked(row, col,):
 def u_pressed():
     global turn_color, selected
     selected = None
-    undo_last_move(move_history, pieces)
-    if turn_color == 'white':
-        turn_color = 'black'
-    else:
+    if not undo_last_move(move_history, pieces):
         turn_color = 'white'
+    else:
+        if turn_color == 'white':
+            turn_color = 'black'
+        else:
+            turn_color = 'white'

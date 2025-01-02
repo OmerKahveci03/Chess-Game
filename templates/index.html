@@ -5,11 +5,22 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-
-    <h1>Chess Game</h1>
-    <div id="chessboard"></div>
-    <button onclick="undoMove()">Undo</button>
+    <h1 id="top_section">Top Section</h1>
+    <div id="main-content">
+        <div id="left_section">
+            <button onclick="undoMove()" id="undo_button">Undo</button>
+            <button onclick="startGame()" id="start">Start</button>
+        </div>
+        <div id="middle_section">
+            <div id="chessboard"></div>
+        </div>
+        <div id="right_section">
+            <!-- Right section content -->
+        </div>
+    </div>
+    <div id="bottom_section">
+        <h2>Bottom</h2>
+    </div>
     <script src="/static/script.js"></script>
-
-</body>
+</body> 
 </html>

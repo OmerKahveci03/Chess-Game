@@ -77,6 +77,17 @@ def handle_undo():
     highlighted_square = None
     return get_board()
 
+@app.route("/start", methods=["POST"])
+def handle_start():
+    """
+    Handle the "start" event.
+    """
+    types = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook']
+    chess.initialize_game(types, types)
+    return get_board()
+
 if __name__ == "__main__":
     # Run the Flask app
     app.run(debug=True)
+
+    types = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook']
