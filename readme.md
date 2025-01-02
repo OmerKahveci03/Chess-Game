@@ -1,5 +1,7 @@
 This is the repo for our revolutionary chess game
 
-# How to run
+# Libraries to Download:
+`pip install flask`
 
-Just do `python game.py`
+# How to run
+Just do `python app.py`
