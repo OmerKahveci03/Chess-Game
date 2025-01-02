@@ -1,0 +1,42 @@
+body {
+    background-color: hsl(41, 100%, 63%);
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;    /* Center vertically */
+    min-height: 100vh;      /* Ensure the body takes up the full viewport height */
+    margin: 0;              /* Remove default margins */
+    flex-direction: column; /* Stack elements vertically */
+}
+
+h1 {
+    border: 2px solid;
+    width: 50%;
+    background-color: hsl(59, 100%, 63%);
+    font-family: gagalin;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.button_box {
+    text-align: center;
+    border: 2px solid;
+    padding: 20px; /* Add padding for spacing */
+    background-color: white; /* Optional: Add a background for clarity */
+}
+
+.button_box a {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    text-decoration: none;
+    color: black;
+    border: 2px solid black;
+    background-color: lightblue; /* Button color */
+    border-radius: 5px; /* Rounded corners */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+.button_box a:hover {
+    background-color: deepskyblue; /* Change color on hover */
+}

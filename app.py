@@ -12,6 +12,11 @@ highlighted_square = None
 def index():
     return render_template("index.html")
 
+# Renders the game page
+@app.route('/game')
+def game():
+    return render_template('game.html')
+
 # return current board state in JSON
 @app.route("/board", methods=["GET"])
 def get_board():

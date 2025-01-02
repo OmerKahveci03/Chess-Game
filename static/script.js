@@ -128,5 +128,9 @@ function startGame() {
     });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    startGame(); // Automatically call startGame when the page loads
+});
+
 // Initial load
 updateBoard();
