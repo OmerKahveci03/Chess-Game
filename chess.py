@@ -1,20 +1,8 @@
 # chess.py
-# This module handles the logic of the chess game. We recieve the moves from game.py as (row, col)
+# This module handles the logic of the chess game. We recieve the moves from app.py as (row, col)
 
-# BASE GAME TO DO:
-# 1) Stalemate (Insufficient Material)
-# 2) Custom Promoting (need front-end help, can do this later down the line)
-
-from common import ROWS, COLS
+from common import *
 from moves import Move, undo_last_move
-
-# global data
-turn_color = 'white'
-selected = None     # the piece to be highlighted
-pieces = []
-winner = None
-move_history = []
-action = None       # only has a value right after a click results in a move happening (moving a piece or playing a card)   [None, 'move', 'capture', 'check', 'promotion', 'card']
 
 # returns the piece located at (row, col)
 def piece_at(row, col):

@@ -1,10 +1,9 @@
 from flask import Flask, render_template, request, jsonify
-import chess  # Your existing chess logic (unchanged)
-from common import ROWS, COLS
+import chess
+# from common import *
 
 app = Flask(__name__)
 
-# Keep track of highlighted square in memory (similar to your game.py)
 highlighted_square = None
 
 # Renders the main page
@@ -50,7 +49,7 @@ def handle_click():
     data = request.get_json()
     row = data.get("row")
     col = data.get("col")
-    if 0 <= row < ROWS and 0 <= col < COLS:
+    if 0 <= row < chess.ROWS and 0 <= col < chess.COLS:
         chess.board_clicked(row, col)
         if chess.selected is not None:
             highlighted_square = (chess.selected.row, chess.selected.col)

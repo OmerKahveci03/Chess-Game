@@ -156,4 +156,4 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Initial load
-updateBoard();
+startGame();
