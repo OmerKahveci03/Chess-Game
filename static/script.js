@@ -3,8 +3,12 @@ const ROWS = 8;
 const COLS = 8;
 const captureSound = new Audio('/static/assets/capture.mp3');
 const moveSound = new Audio('static/assets/move.mp3');
+const promotionSound = new Audio('/static/assets/promotion.mp3');
+const checkSound = new Audio('static/assets/check.mp3');
 captureSound.preload = 'auto';
 moveSound.preload = 'auto';
+promotionSound.preload = 'auto';
+checkSound.preload = 'auto';
 
 for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
@@ -107,6 +111,10 @@ function renderBoardData(data) {
         moveSound.play();
     }else if (data.action == 'capture') {
         captureSound.play();
+    }else if (data.action == 'promotion') {
+        promotionSound.play();
+    }else if (data.action == 'check') {
+        checkSound.play();
     }
 
     // If there's a winner, handle that

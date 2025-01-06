@@ -53,55 +53,6 @@ class Piece():
         pieces.remove(self)
         return self
 
-    # moves the piece from its initial position to (row, col)
-    def move_piece(self, row, col):
-        global turn_color, action
-        target_piece = None
-        original_row, original_col = self.row, self.col
-
-            # if we are castling, move rook too
-        if self.type == 'king' and self.col + 2 == col: 
-            target_piece = piece_at(row, col + 1)
-            target_piece.col = self.col + 1
-        elif self.type == 'king' and self.col - 2 == col:
-            target_piece = piece_at(row, col - 2)
-            target_piece.col = self.col - 1
-            # if we are en passant, target the correct square
-        elif self.type == 'pawn' and self.col != col and not piece_at(row, col):
-            direction = 1
-            if self.color == 'white':
-                direction = -1
-            target_piece = piece_at(row - direction, col)
-            if target_piece:
-                target_piece.kill()
-            self.row, self.col = row, col
-            self.times_moved += 1
-        else:   # just a regular move with no special rules
-            target_piece = piece_at(row, col)
-            action = 'move'
-            if target_piece:
-                target_piece.kill()
-                action = 'capture'
-                
-        self.row, self.col = row, col
-        self.times_moved += 1
-
-        # promotion checking
-        if self.type == 'pawn':
-            if (self.color == 'white' and self.row == 0) or (self.color == 'black' and self.row == ROWS - 1):
-                self.type = 'queen'
-                action = 'promotion'
-
-        # change turn
-        if turn_color == 'white':
-            turn_color = 'black'
-        else:
-            turn_color = 'white'
-        print(f"{turn_color}'s turn.")
-
-        # record move in move_history
-        move_history.append(Move(self, original_row, original_col, action, target_piece))
-
 # returns true if the given move (row, col) doesn't go out of bounds or onto a friendly piece
     def is_legal_move(self, row, col):
         target_piece = piece_at(row, col)
@@ -233,6 +184,60 @@ class Piece():
 
         return in_check
 
+    # moves the piece from its initial position to (row, col)
+    def move_piece(self, row, col):
+        global turn_color, action
+        target_piece = None
+        original_row, original_col = self.row, self.col
+
+            # if we are castling, move rook too
+        if self.type == 'king' and self.col + 2 == col: 
+            target_piece = piece_at(row, col + 1)
+            target_piece.col = self.col + 1
+        elif self.type == 'king' and self.col - 2 == col:
+            target_piece = piece_at(row, col - 2)
+            target_piece.col = self.col - 1
+            # if we are en passant, target the correct square
+        elif self.type == 'pawn' and self.col != col and not piece_at(row, col):
+            direction = 1
+            if self.color == 'white':
+                direction = -1
+            target_piece = piece_at(row - direction, col)
+            if target_piece:
+                target_piece.kill()
+            self.row, self.col = row, col
+            self.times_moved += 1
+        else:   # just a regular move with no special rules
+            target_piece = piece_at(row, col)
+            action = 'move'
+            if target_piece:
+                target_piece.kill()
+                action = 'capture'
+                
+        self.row, self.col = row, col
+        self.times_moved += 1
+
+        # promotion checking
+        if self.type == 'pawn':
+            if (self.color == 'white' and self.row == 0) or (self.color == 'black' and self.row == ROWS - 1):
+                self.type = 'queen'
+                action = 'promotion'
+
+        # check test
+        for piece in pieces:
+            if piece.color == self.color and piece.threatens_enemy_king():
+                action = 'check'
+            
+        # change turn
+        if turn_color == 'white':
+            turn_color = 'black'
+        else:
+            turn_color = 'white'
+        print(f"{turn_color}'s turn.")
+
+        # record move in move_history
+        move_history.append(Move(self, original_row, original_col, action, target_piece))
+
 # returns 0 if not. Returns the direction (-1 or 1) if yes
     def is_en_passant_possible(self):
         if len(move_history) > 0: 
@@ -299,8 +304,9 @@ def initialize_army(color, types):
         pieces.append(Piece(rows[1], i, 'pawn', color))
 
 def initialize_game(white_types, black_types):
-    global pieces, move_history, turn_color
+    global pieces, move_history, turn_color, winner, action
     pieces = []
+    winner, action = None, None
     move_history = []
     turn_color = 'white'
     initialize_army('white', white_types)
@@ -364,12 +370,14 @@ def board_clicked(row, col,):
     selected = None
 
 def u_pressed():
-    global turn_color, selected, action
-    selected = None
-    previous_move = undo_last_move(move_history, pieces)
-    if previous_move:
-        action = previous_move.action
+    global turn_color, selected, action, winner
+    selected, winner = None, None
+    if undo_last_move(move_history, pieces):
+        if len(move_history) > 0:
+            action = move_history[len(move_history) - 1].action
         if turn_color == 'white':
             turn_color = 'black'
         else:
             turn_color = 'white'
+    else:
+        action = None

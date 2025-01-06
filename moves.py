@@ -35,4 +35,4 @@ def undo_last_move(move_history, pieces):
             pieces.append(move.secondary_piece)
     else:
         return False
-    return move
+    return True
