@@ -340,8 +340,10 @@ def board_clicked(row, col,):
     previously_selected = selected
     target_piece = piece_at(row, col)
     if target_piece and target_piece.color == turn_color:
-        selected = target_piece
-        target_piece.print_valid_moves()
+        if target_piece == previously_selected:
+            selected = None
+        else:
+            selected = target_piece
         return None
     elif previously_selected:
         move_list = previously_selected.get_valid_moves()

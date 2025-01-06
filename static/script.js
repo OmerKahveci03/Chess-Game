@@ -27,9 +27,7 @@ for (let row = 0; row < ROWS; row++) {
 
 // Fetch the board state from server and render
 function updateBoard() {
-    fetch('/board')
-        .then(response => response.json())
-        .then(data => {
+    fetch('/board').then(response => response.json()).then(data => {
             // Clear existing pieces/highlights
             for (let row = 0; row < ROWS; row++) {
                 for (let col = 0; col < COLS; col++) {
@@ -45,7 +43,6 @@ function updateBoard() {
                 if (squareEl) {
                     const img = document.createElement('img');
                     img.classList.add('piece-img');
-                    // e.g. /static/assets/white_pawn.png or /static/assets/black_knight.png
                     img.src = `/static/assets/${piece.color}_${piece.type}.png`;
                     squareEl.appendChild(img);
                 }
@@ -58,7 +55,6 @@ function updateBoard() {
                     highlightEl.classList.add('highlighted');
                 }
             }
-            // If there's a winner, you can alert or display a message
             if (data.winner) {
                 alert(`Winner: ${data.winner}`);
             }
@@ -85,6 +81,7 @@ function renderBoardData(data) {
         for (let col = 0; col < COLS; col++) {
             const squareEl = document.getElementById(`square-${row}-${col}`);
             squareEl.classList.remove('highlighted');
+            squareEl.classList.remove('valid-move');
             squareEl.innerHTML = '';
         }
     }
@@ -98,6 +95,7 @@ function renderBoardData(data) {
             squareEl.appendChild(img);
         }
     });
+
     // Highlight selected
     if (data.highlighted_square) {
         const [hRow, hCol] = data.highlighted_square;
@@ -106,6 +104,18 @@ function renderBoardData(data) {
             highlightEl.classList.add('highlighted');
         }
     }
+
+    // Highlight valid moves
+    if (data.valid_moves) {
+        data.valid_moves.forEach(move => {
+            const [moveRow, moveCol] = move;
+            const moveEl = document.getElementById(`square-${moveRow}-${moveCol}`);
+            if (moveEl) {
+                moveEl.classList.add('valid-move');
+            }
+        });
+    }
+
     // If there's a winner, handle that
     if (data.winner) {
         alert(`Winner: ${data.winner}`);

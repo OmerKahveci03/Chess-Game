@@ -30,9 +30,13 @@ def get_board():
         }
         for piece in chess.pieces
     ]
+    move_list = []
+    if chess.selected:
+        move_list = chess.selected.get_valid_moves()
     data = {
         "pieces": pieces,
         "highlighted_square": highlighted_square,
+        "valid_moves": move_list,
         "winner": chess.winner
     }
     return jsonify(data)

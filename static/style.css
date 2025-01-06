@@ -18,10 +18,34 @@
 .black-square {
     background-color: rgb(181, 136, 99);
 }
-/* A highlight ring (3px) around the square */
-.highlighted {
-    outline: 3px solid rgb(100, 200, 100);
+
+@keyframes selected_pulse{
+    0% {
+        box-shadow: 0 0 10px 4px hsl(120, 100%, 73%);
+    }
+    70% {
+        box-shadow: 0 0 10px 4px hsl(120, 37%, 47%);
+    }
+    100% {
+        box-shadow: 0 0 10px 4px hsl(120, 100%, 73%);
+    }
 }
+.highlighted {
+    animation: selected_pulse 3s infinite;
+    z-index: 1;
+    position: relative;
+}
+
+.valid-move {
+    z-index: 1;
+}
+
+.valid-move:hover {
+    z-index: 2;
+    transform: scale(1.1);
+    transition: transform 0.2s ease-in-out;
+}
+
 /* Piece image: fit entire square */
 .piece-img {
     width: 100%;
