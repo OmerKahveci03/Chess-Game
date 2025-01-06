@@ -3,15 +3,16 @@
 
 class Move():
     # secondary_piece stores either the enemy piece that was captured, or pieces involved in special moves, like castling and promotion
-    def __init__(self, moved_piece, original_row, original_col, secondary_piece=None, is_promotion=False):
+    def __init__(self, moved_piece, original_row, original_col, action, secondary_piece=None):
         self.moved_piece = moved_piece
         self.original_row = original_row
         self.original_col = original_col
         self.secondary_piece = secondary_piece
-        self.is_promotion = is_promotion
+        self.action = action        # actions are one of the following: ['move', 'capture', 'check', 'promotion', 'card']
 
 # pretty self explanitory what this does. Returns true if successful, returns false if not possible
 def undo_last_move(move_history, pieces):
+    move = None
     if len(move_history) > 0:
         move = move_history.pop()
 
@@ -27,11 +28,11 @@ def undo_last_move(move_history, pieces):
         
         move.moved_piece.row, move.moved_piece.col = move.original_row, move.original_col
         move.moved_piece.times_moved -= 1
-        if move.is_promotion:
+        if move.action == 'promotion':
             move.moved_piece.type = 'pawn'
         
         if move.secondary_piece and not castled:
             pieces.append(move.secondary_piece)
     else:
         return False
-    return True
+    return move

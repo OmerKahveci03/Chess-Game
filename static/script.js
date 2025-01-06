@@ -1,31 +1,30 @@
 const chessboardEl = document.getElementById('chessboard');
 const ROWS = 8;
 const COLS = 8;
+const captureSound = new Audio('/static/assets/capture.mp3');
+const moveSound = new Audio('static/assets/move.mp3');
+captureSound.preload = 'auto';
+moveSound.preload = 'auto';
 
-// Dynamically create squares
 for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
         const square = document.createElement('div');
         square.classList.add('square');
-        // White or black square color
         if ((row + col) % 2 === 0) {
             square.classList.add('white-square');
         } else {
             square.classList.add('black-square');
         }
-
-        // When user clicks a square, send row/col to server
         square.addEventListener('click', () => {
             handleSquareClick(row, col);
         });
 
-        // Unique ID for each square (so we can update in JS easily)
         square.id = `square-${row}-${col}`;
         chessboardEl.appendChild(square);
     }
 }
 
-// Fetch the board state from server and render
+// Clears existing pieces and highlight classes, places pieces, gives highlight class to correct squares. Occurs once
 function updateBoard() {
     fetch('/board').then(response => response.json()).then(data => {
             // Clear existing pieces/highlights
@@ -61,20 +60,7 @@ function updateBoard() {
         })
         .catch(err => console.error(err));
 }
-
-function handleSquareClick(row, col) {
-    fetch('/click', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ row, col })
-    })
-    .then(response => response.json())
-    .then(data => {
-        renderBoardData(data);
-    });
-}
-
-// After an action, re-render the board
+// Clear old board, place pieces, highlight squares
 function renderBoardData(data) {
     // Clear old board
     for (let row = 0; row < ROWS; row++) {
@@ -116,10 +102,29 @@ function renderBoardData(data) {
         });
     }
 
+    // Play the correct sound after the move
+    if (data.action == 'move') {
+        moveSound.play();
+    }else if (data.action == 'capture') {
+        captureSound.play();
+    }
+
     // If there's a winner, handle that
     if (data.winner) {
         alert(`Winner: ${data.winner}`);
     }
+}
+
+function handleSquareClick(row, col) {
+    fetch('/click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ row, col })
+    })
+    .then(response => response.json())
+    .then(data => {
+        renderBoardData(data);
+    });
 }
 
 function undoMove() {

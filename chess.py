@@ -14,6 +14,7 @@ selected = None     # the piece to be highlighted
 pieces = []
 winner = None
 move_history = []
+action = None       # only has a value right after a click results in a move happening (moving a piece or playing a card)   [None, 'move', 'capture', 'check', 'promotion', 'card']
 
 # returns the piece located at (row, col)
 def piece_at(row, col):
@@ -54,7 +55,7 @@ class Piece():
 
     # moves the piece from its initial position to (row, col)
     def move_piece(self, row, col):
-        global turn_color
+        global turn_color, action
         target_piece = None
         original_row, original_col = self.row, self.col
 
@@ -77,18 +78,19 @@ class Piece():
             self.times_moved += 1
         else:   # just a regular move with no special rules
             target_piece = piece_at(row, col)
+            action = 'move'
             if target_piece:
                 target_piece.kill()
+                action = 'capture'
                 
         self.row, self.col = row, col
         self.times_moved += 1
 
         # promotion checking
-        is_promotion = False
         if self.type == 'pawn':
             if (self.color == 'white' and self.row == 0) or (self.color == 'black' and self.row == ROWS - 1):
                 self.type = 'queen'
-                is_promotion = True
+                action = 'promotion'
 
         # change turn
         if turn_color == 'white':
@@ -98,7 +100,7 @@ class Piece():
         print(f"{turn_color}'s turn.")
 
         # record move in move_history
-        move_history.append(Move(self, original_row, original_col, target_piece, is_promotion))
+        move_history.append(Move(self, original_row, original_col, action, target_piece))
 
 # returns true if the given move (row, col) doesn't go out of bounds or onto a friendly piece
     def is_legal_move(self, row, col):
@@ -336,7 +338,8 @@ def board_clicked(row, col,):
     if not pieces:
         return None # do nothing if the game hasn't started
     
-    global selected
+    global selected, action
+    action = None
     previously_selected = selected
     target_piece = piece_at(row, col)
     if target_piece and target_piece.color == turn_color:
@@ -361,11 +364,11 @@ def board_clicked(row, col,):
     selected = None
 
 def u_pressed():
-    global turn_color, selected
+    global turn_color, selected, action
     selected = None
-    if not undo_last_move(move_history, pieces):
-        turn_color = 'white'
-    else:
+    previous_move = undo_last_move(move_history, pieces)
+    if previous_move:
+        action = previous_move.action
         if turn_color == 'white':
             turn_color = 'black'
         else:

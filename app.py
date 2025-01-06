@@ -37,7 +37,8 @@ def get_board():
         "pieces": pieces,
         "highlighted_square": highlighted_square,
         "valid_moves": move_list,
-        "winner": chess.winner
+        "winner": chess.winner,
+        "action": chess.action
     }
     return jsonify(data)
 
