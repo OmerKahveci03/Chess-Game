@@ -30,16 +30,33 @@
         box-shadow: 0 0 10px 4px hsl(120, 100%, 73%);
     }
 }
+
+/* Used for the selected piece */
 .highlighted {
     animation: selected_pulse 3s infinite;
     z-index: 1;
     position: relative;
 }
 
-.valid-move {
-    z-index: 1;
+
+/* Faint Red Overlay (under) the square */
+.square.valid-move::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0.2); 
+    z-index: -1;
 }
 
+/* squares that a selected square can move to*/
+.valid-move {
+    z-index: 0;
+}
+
+/* makes it look good when you hover over a valid square */
 .valid-move:hover {
     z-index: 2;
     transform: scale(1.1);
