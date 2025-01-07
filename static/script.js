@@ -9,6 +9,7 @@ captureSound.preload = 'auto';
 moveSound.preload = 'auto';
 promotionSound.preload = 'auto';
 checkSound.preload = 'auto';
+let selectedPiece = null;
 
 for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
@@ -52,12 +53,15 @@ function placePieces(data){
 }
 
 function hightlightSquares(data){
-        // Highlight selected
     if (data.highlighted_square) {
         const [hRow, hCol] = data.highlighted_square;
         const highlightEl = document.getElementById(`square-${hRow}-${hCol}`);
         if (highlightEl) {
+            const pieceEl = highlightEl.querySelector('img');
             highlightEl.classList.add('highlighted');
+            pieceEl.classList.add('selected-piece');
+//            pieceEl.classList.remove('piece-img');
+            selectedPiece = pieceEl
         }
     }
     // Highlight valid moves

@@ -1,14 +1,11 @@
 #chessboard {
     display: grid;
-    grid-template-columns: repeat(8, 60px); /* 8 columns, each 60px wide */
-    grid-template-rows: repeat(8, 60px);    /* 8 rows, each 60px tall */
+    grid-template-columns: repeat(8, 60px);
+    grid-template-rows: repeat(8, 60px);
     width: 480px;
     height: 480px;
     border: 2px solid #000;
-    position: relative; /* Ensure pseudo-element positions are relative to this container */
-    overflow: hidden;
 }
-
 @keyframes darken {
     0% {
         background-color: rgba(0, 0, 0, 0); /* Start with no darkness */
@@ -55,13 +52,12 @@
     }
 }
 
-/* Used for the selected piece */
+/* Used for the selected square */
 .highlighted {
     animation: selected_pulse 3s infinite;
     z-index: 1;
     position: relative;
 }
-
 
 /* Faint Red Overlay (under) the square */
 .square.valid-move::before {
@@ -92,6 +88,11 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+}
+
+/* this class is meant to follow the cursor - will implement*/
+.piece-img.selected-piece {
+    transform: scale(1.1);
 }
 
 body {
@@ -151,15 +152,6 @@ body {
     text-align: center;
     height: auto;
     margin: 0px;
-}
-
-#chessboard {
-    display: grid;
-    grid-template-columns: repeat(8, 60px);
-    grid-template-rows: repeat(8, 60px);
-    width: 480px;
-    height: 480px;
-    border: 2px solid #000;
 }
 
 button{
