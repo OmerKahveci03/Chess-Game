@@ -14,14 +14,12 @@ Just do `python app.py`
 
 ## Frontend:
 1) Animate pieces
+2) Some kind of login page and account creation
 
 ## Refactor Stuff
 1) move piece_at and enemy_piece_at into common.py
 2) create piece.py to store the piece class
 3) Maybe create children for Piece
-
-## Login Page
-1) Some kind of login page and account creation
 
 ## Multiplayer
 1) Make the site online

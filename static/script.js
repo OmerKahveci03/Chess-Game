@@ -28,45 +28,7 @@ for (let row = 0; row < ROWS; row++) {
     }
 }
 
-// Clears existing pieces and highlight classes, places pieces, gives highlight class to correct squares. Occurs once
-function updateBoard() {
-    fetch('/board').then(response => response.json()).then(data => {
-            // Clear existing pieces/highlights
-            for (let row = 0; row < ROWS; row++) {
-                for (let col = 0; col < COLS; col++) {
-                    const squareEl = document.getElementById(`square-${row}-${col}`);
-                    squareEl.classList.remove('highlighted');
-                    // Remove old piece images if any
-                    squareEl.innerHTML = '';
-                }
-            }
-            // Place pieces
-            data.pieces.forEach(piece => {
-                const squareEl = document.getElementById(`square-${piece.row}-${piece.col}`);
-                if (squareEl) {
-                    const img = document.createElement('img');
-                    img.classList.add('piece-img');
-                    img.src = `/static/assets/${piece.color}_${piece.type}.png`;
-                    squareEl.appendChild(img);
-                }
-            });
-            // Highlight the selected square if any
-            if (data.highlighted_square) {
-                const [hRow, hCol] = data.highlighted_square;
-                const highlightEl = document.getElementById(`square-${hRow}-${hCol}`);
-                if (highlightEl) {
-                    highlightEl.classList.add('highlighted');
-                }
-            }
-            if (data.winner) {
-                alert(`Winner: ${data.winner}`);
-            }
-        })
-        .catch(err => console.error(err));
-}
-// Clear old board, place pieces, highlight squares
-function renderBoardData(data) {
-    // Clear old board
+function clearBoard(){
     for (let row = 0; row < ROWS; row++) {
         for (let col = 0; col < COLS; col++) {
             const squareEl = document.getElementById(`square-${row}-${col}`);
@@ -75,7 +37,9 @@ function renderBoardData(data) {
             squareEl.innerHTML = '';
         }
     }
-    // Place pieces
+}
+
+function placePieces(data){
     data.pieces.forEach(piece => {
         const squareEl = document.getElementById(`square-${piece.row}-${piece.col}`);
         if (squareEl) {
@@ -85,8 +49,10 @@ function renderBoardData(data) {
             squareEl.appendChild(img);
         }
     });
+}
 
-    // Highlight selected
+function hightlightSquares(data){
+        // Highlight selected
     if (data.highlighted_square) {
         const [hRow, hCol] = data.highlighted_square;
         const highlightEl = document.getElementById(`square-${hRow}-${hCol}`);
@@ -94,7 +60,6 @@ function renderBoardData(data) {
             highlightEl.classList.add('highlighted');
         }
     }
-
     // Highlight valid moves
     if (data.valid_moves) {
         data.valid_moves.forEach(move => {
@@ -105,8 +70,9 @@ function renderBoardData(data) {
             }
         });
     }
+}
 
-    // Play the correct sound after the move
+function playMoveSound(data){
     if (data.action == 'move') {
         moveSound.play();
     }else if (data.action == 'capture') {
@@ -116,10 +82,22 @@ function renderBoardData(data) {
     }else if (data.action == 'check') {
         checkSound.play();
     }
+}
+
+// Clear old board, place pieces, highlight squares
+function renderBoardData(data) {
+    clearBoard();
+    placePieces(data);
+    hightlightSquares(data);    
+    playMoveSound(data);
 
     // If there's a winner, handle that
     if (data.winner) {
-        alert(`Winner: ${data.winner}`);
+        document.getElementById("top_section").textContent = `Winner: ${data.winner}`;
+        document.getElementById("chessboard").classList.add("game-over");
+    }else{
+        document.getElementById("top_section").textContent = `Top Section`;
+        document.getElementById("chessboard").classList.remove("game-over");
     }
 }
 
@@ -150,10 +128,6 @@ function startGame() {
         renderBoardData(data);
     });
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    startGame(); // Automatically call startGame when the page loads
-});
 
 // Initial load
 startGame();

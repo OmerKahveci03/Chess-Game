@@ -50,7 +50,8 @@ def handle_click():
     row = data.get("row")
     col = data.get("col")
     if 0 <= row < chess.ROWS and 0 <= col < chess.COLS:
-        chess.board_clicked(row, col)
+        if not chess.winner:
+            chess.board_clicked(row, col)
         if chess.selected is not None:
             highlighted_square = (chess.selected.row, chess.selected.col)
         else:

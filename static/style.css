@@ -5,7 +5,31 @@
     width: 480px;
     height: 480px;
     border: 2px solid #000;
+    position: relative; /* Ensure pseudo-element positions are relative to this container */
+    overflow: hidden;
 }
+
+@keyframes darken {
+    0% {
+        background-color: rgba(0, 0, 0, 0); /* Start with no darkness */
+    }
+    100% {
+        background-color: rgba(0, 0, 0, 0.5); /* End with 50% opacity black */
+    }
+}
+#chessboard.game-over::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Matches the chessboard's width */
+    height: 100%; /* Matches the chessboard's height */
+    background-color: rgba(0, 0, 0, 0); /* Initially transparent */
+    z-index: 1; /* Ensure it's above the chessboard content */
+    pointer-events: none; /* Allow interactions with the chessboard to continue */
+    animation: darken 2s ease-in-out forwards; /* Apply animation with a duration of 2 seconds */
+}
+
 .square {
     width: 60px;
     height: 60px;
