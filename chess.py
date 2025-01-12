@@ -205,11 +205,14 @@ class Piece():
         self.row, self.col = row, col
         self.times_moved += 1
 
+        is_promote = False
         # promotion checking
         if self.type == 'pawn':
             if (self.color == 'white' and self.row == 0) or (self.color == 'black' and self.row == ROWS - 1):
                 self.type = 'queen'
                 action = 'promotion'
+                is_promote = True
+                move_history.append(Move(self, original_row, original_col, action, target_piece))
 
         # check test
         for piece in pieces:
@@ -223,8 +226,9 @@ class Piece():
             turn_color = 'white'
         print(f"{turn_color}'s turn.")
 
-        # record move in move_history
-        move_history.append(Move(self, original_row, original_col, action, target_piece))
+        # record move in move_history. action is used for audio, but if it is a promotion, we need to store it as one.
+        if not is_promote:
+            move_history.append(Move(self, original_row, original_col, action, target_piece))
 
 # returns 0 if not. Returns the direction (-1 or 1) if yes
     def is_en_passant_possible(self):
